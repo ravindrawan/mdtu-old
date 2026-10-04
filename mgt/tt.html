@@ -1,0 +1,238 @@
+
+<h2 class="sr-only">පුහුණු වැඩසටහන් වාර්තා උපකරණ පුවරුව</h2>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans Sinhala', sans-serif; }
+  .root { padding: 1rem 0; color: var(--color-text-primary); }
+  .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); }
+  .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px; }
+  .filter-group label { font-size: 12px; color: var(--color-text-secondary); }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.9rem 1rem; }
+  .metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 500; }
+  .metric-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  .chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+  .chart-title { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1rem; }
+  .officer-list { display: flex; flex-direction: column; gap: 10px; }
+  .officer-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .officer-header { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1.25rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .officer-info { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: #E6F1FB; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #0C447C; flex-shrink: 0; }
+  .officer-name { font-size: 14px; font-weight: 500; }
+  .officer-nic { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .badge { background: #E6F1FB; color: #0C447C; font-size: 11px; padding: 4px 10px; border-radius: var(--border-radius-md); white-space: nowrap; }
+  .prog-table { width: 100%; border-collapse: collapse; padding: 0.5rem 1.25rem 1rem; display: block; }
+  .prog-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 1.25rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .prog-row:last-child { border-bottom: none; }
+  .prog-name { font-size: 13px; color: var(--color-text-primary); }
+  .prog-date { font-size: 12px; color: var(--color-text-secondary); }
+  .bar-mini { height: 4px; background: #B5D4F4; border-radius: 2px; margin: 0 1.25rem 0.75rem; }
+  .bar-mini-fill { height: 4px; background: #185FA5; border-radius: 2px; }
+  select { background: var(--color-background-secondary); color: var(--color-text-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 6px 10px; font-size: 13px; width: 100%; cursor: pointer; }
+  button.search-btn { background: #185FA5; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 8px 20px; font-size: 13px; cursor: pointer; align-self: flex-end; }
+  button.search-btn:hover { background: #0C447C; }
+  .section-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 0.75rem; }
+  @media (max-width: 500px) { .charts-row { grid-template-columns: 1fr; } }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;700&display=swap" rel="stylesheet">
+
+<div class="root">
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>කාර්යාලය</label>
+      <select id="office-sel">
+        <option value="ගාල්ල දිස්ත්‍රික් ලේකම්">ගාල්ල දිස්ත්‍රික් ලේකම්</option>
+        <option value="කොළඹ දිස්ත්‍රික් ලේකම්">කොළඹ දිස්ත්‍රික් ලේකම්</option>
+        <option value="මාතර දිස්ත්‍රික් ලේකම්">මාතර දිස්ත්‍රික් ලේකම්</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>වසර</label>
+      <select id="year-sel">
+        <option>2025</option>
+        <option selected>2024</option>
+        <option>2023</option>
+        <option>2022</option>
+      </select>
+    </div>
+    <button class="search-btn" onclick="renderReport()">සොයන්න</button>
+  </div>
+
+  <div class="metrics" id="metrics"></div>
+  <div class="charts-row" id="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">නිලධාරීන් අනුව සහභාගීත්වය</div>
+      <div style="position:relative;height:200px;"><canvas id="barChart" role="img" aria-label="Bar chart of training participation by officer"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">මාසික බෙදාහැරීම</div>
+      <div style="position:relative;height:200px;"><canvas id="lineChart" role="img" aria-label="Line chart of monthly training distribution"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-title" id="report-heading"></div>
+  <div class="officer-list" id="officer-list"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const db = {
+  "ගාල්ල දිස්ත්‍රික් ලේකම්": {
+    2024: [
+      { nid:"987654321V", name:"කේ.ජී. ප්‍රභාත් කුමාර", programs:[
+        {name:"කළමනාකරණ නායකත්ව පුහුණු වැඩසටහන", date:"2024-01-15"},
+        {name:"සේවා ප්‍රදානය කළමනාකරණය", date:"2024-03-22"},
+        {name:"ICT ප්‍රාථමික සහතිකය", date:"2024-06-10"},
+        {name:"ආතර් ශ්‍රී ලංකා සුව සේවා", date:"2024-09-05"}
+      ]},
+      { nid:"876543210V", name:"ජී.ඩී. අමරසිංහ", programs:[
+        {name:"මූල්‍ය කළමනාකරණ පාඨමාලාව", date:"2024-02-08"},
+        {name:"පාරිසරික කළමනාකරණ පුහුණුව", date:"2024-07-19"}
+      ]},
+      { nid:"765432109V", name:"ඩී.ඩී. ප්‍රේමකාන්ති", programs:[
+        {name:"HR කළමනාකරණ සහතිකය", date:"2024-01-29"},
+        {name:"ව්‍යාපෘති කළමනාකරණ පාඨමාලාව", date:"2024-04-14"},
+        {name:"ICT ප්‍රාථමික සහතිකය", date:"2024-08-30"}
+      ]},
+      { nid:"654321098V", name:"ටී.ඒ.ටී. සිල්වා", programs:[
+        {name:"ප්‍රසම්පාදන කළමනාකරණ", date:"2024-03-01"},
+        {name:"මූල්‍ය කළමනාකරණ පාඨමාලාව", date:"2024-05-20"},
+        {name:"ව්‍යාපෘති කළමනාකරණ පාඨමාලාව", date:"2024-10-11"},
+        {name:"නායකත්ව හා සන්නිවේදන", date:"2024-11-22"},
+        {name:"ඩිජිටල් පරිපාලන", date:"2024-12-03"}
+      ]},
+      { nid:"543210987V", name:"එන්.ඩී. රාජපක්ෂ", programs:[
+        {name:"ජල සම්පත් කළමනාකරණ", date:"2024-02-25"},
+        {name:"ස්වයං රැකියා ක්‍රමවේද", date:"2024-06-18"}
+      ]}
+    ]
+  },
+  "කොළඹ දිස්ත්‍රික් ලේකම්": {
+    2024: [
+      { nid:"111222333V", name:"ඒ.ඩී. ප්‍රේමරත්න", programs:[
+        {name:"ප්‍රමිති කළමනාකරණ", date:"2024-01-10"},
+        {name:"ICT ප්‍රාථමික සහතිකය", date:"2024-05-05"}
+      ]},
+      { nid:"444555666V", name:"ආර්.ජී. ජයවර්ධන", programs:[
+        {name:"නායකත්ව හා සන්නිවේදන", date:"2024-03-15"},
+        {name:"HR කළමනාකරණ සහතිකය", date:"2024-07-22"},
+        {name:"ඩිජිටල් පරිපාලන", date:"2024-09-30"}
+      ]}
+    ]
+  },
+  "මාතර දිස්ත්‍රික් ලේකම්": {
+    2024: [
+      { nid:"777888999V", name:"කේ.ඩී. කරුණාරත්න", programs:[
+        {name:"සේවා ප්‍රදානය කළමනාකරණය", date:"2024-02-14"},
+        {name:"ICT ප්‍රාථමික සහතිකය", date:"2024-04-28"},
+        {name:"ව්‍යාපෘති කළමනාකරණ පාඨමාලාව", date:"2024-08-15"}
+      ]}
+    ]
+  }
+};
+
+const colors = ['#185FA5','#0F6E56','#993C1D','#993556','#3B6D11','#854F0B'];
+const monthNames = ['ජන','පෙබ','මාර්','අප්‍ර','මැයි','ජූනි','ජූලි','අගෝ','සැප','ඔක්','නොවැ','දෙසැ'];
+
+let barChart, lineChart;
+
+function getInitials(name) {
+  const parts = name.trim().split(' ');
+  return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0,2).toUpperCase();
+}
+
+function renderReport() {
+  const office = document.getElementById('office-sel').value;
+  const year = parseInt(document.getElementById('year-sel').value);
+  const officers = (db[office] && db[office][year]) ? db[office][year] : [];
+
+  const totalProgs = officers.reduce((s,o)=>s+o.programs.length,0);
+  const avgProgs = officers.length ? (totalProgs/officers.length).toFixed(1) : 0;
+  const topOfficer = officers.length ? officers.reduce((a,b)=>a.programs.length>b.programs.length?a:b) : null;
+
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric-card"><div class="metric-label">සම්පූර්ණ නිලධාරීන්</div><div class="metric-value">${officers.length}</div><div class="metric-sub">${year} වසර</div></div>
+    <div class="metric-card"><div class="metric-label">සම්පූර්ණ වැඩසටහන්</div><div class="metric-value">${totalProgs}</div><div class="metric-sub">ඒ.ජ. ${avgProgs}/නිලධාරී</div></div>
+    <div class="metric-card"><div class="metric-label">වැඩිම සහභාගීත්වය</div><div class="metric-value" style="font-size:16px;">${topOfficer ? topOfficer.name.split(' ')[0] : '-'}</div><div class="metric-sub">${topOfficer ? topOfficer.programs.length+' වැඩසටහන්' : ''}</div></div>
+  `;
+
+  document.getElementById('report-heading').textContent = `${office} — ${year} නිලධාරී වාර්තාව`;
+
+  const maxProg = Math.max(...officers.map(o=>o.programs.length), 1);
+  document.getElementById('officer-list').innerHTML = officers.map(o => {
+    const rows = o.programs.map(p=>`<div class="prog-row"><span class="prog-name">${p.name}</span><span class="prog-date">${p.date}</span></div>`).join('');
+    const fillPct = Math.round((o.programs.length/maxProg)*100);
+    return `<div class="officer-card">
+      <div class="officer-header">
+        <div class="officer-info">
+          <div class="avatar">${getInitials(o.name)}</div>
+          <div><div class="officer-name">${o.name}</div><div class="officer-nic">${o.nid}</div></div>
+        </div>
+        <span class="badge">වැඩසටහන් ${o.programs.length}ක්</span>
+      </div>
+      <div class="bar-mini"><div class="bar-mini-fill" style="width:${fillPct}%"></div></div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  const barCtx = document.getElementById('barChart');
+  if(barChart) barChart.destroy();
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: officers.map(o=>o.name.split(' ')[0]+' '+o.name.split(' ').slice(-1)[0]),
+      datasets: [{
+        label: 'වැඩසටහන් ගණන',
+        data: officers.map(o=>o.programs.length),
+        backgroundColor: officers.map((_,i)=>colors[i%colors.length]),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:10},autoSkip:false,maxRotation:30},grid:{display:false}},
+        y:{ticks:{stepSize:1},beginAtZero:true,grid:{color:'rgba(128,128,128,0.1)'}}
+      }
+    }
+  });
+
+  const monthCounts = Array(12).fill(0);
+  officers.forEach(o=>o.programs.forEach(p=>{
+    const m = new Date(p.date).getMonth(); if(!isNaN(m)) monthCounts[m]++;
+  }));
+  const lineCtx = document.getElementById('lineChart');
+  if(lineChart) lineChart.destroy();
+  lineChart = new Chart(lineCtx, {
+    type:'line',
+    data:{
+      labels: monthNames,
+      datasets:[{
+        label:'වැඩසටහන්',
+        data: monthCounts,
+        borderColor:'#185FA5',
+        backgroundColor:'rgba(24,95,165,0.08)',
+        fill:true,
+        tension:0.4,
+        pointBackgroundColor:'#185FA5',
+        pointRadius:4
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:10}},grid:{display:false}},
+        y:{ticks:{stepSize:1},beginAtZero:true,grid:{color:'rgba(128,128,128,0.1)'}}
+      }
+    }
+  });
+}
+
+renderReport();
+</script>

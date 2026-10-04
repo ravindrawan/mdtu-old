@@ -1,0 +1,23 @@
+<?php
+
+$servername = "localhost";
+$username = "mdtunwgo_dbuser";
+$password = "LsHnaTiuBg2Ih1A&";
+$dbname = "mdtunwgo_mdtu";
+
+
+
+
+
+
+
+
+$con = new mysqli($servername, $username, $password, $dbname);
+
+if ($con->connect_error) {
+    die("Connection failed: " . $con->connect_error);
+}
+
+// ???????? ??? ???? ??????? ?????? 'latin1' ??? ?????
+$con->set_charset("latin1"); 
+?>
